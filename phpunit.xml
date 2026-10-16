@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.1/phpunit.xsd" backupGlobals="false" bootstrap="vendor/autoload.php" colors="true" processIsolation="false" stopOnFailure="false" executionOrder="random" failOnWarning="true" failOnRisky="true" failOnEmptyTestSuite="true" beStrictAboutOutputDuringTests="true" cacheDirectory=".phpunit.cache" backupStaticProperties="false">
+  <testsuites>
+    <testsuite name="Feature">
+        <directory suffix="Test.php">./tests/Feature</directory>
+    </testsuite>
+    <testsuite name="Unit">
+        <directory suffix="Test.php">./tests/Unit</directory>
+    </testsuite>
+  </testsuites>
+  <php>
+    <env name="APP_ENV" value="testing"/>
+    <env name="APP_KEY" value="base64:ZZf/rq1fnXBjLMI+7uxtUkwnIY6QLYVmJsJtmDmoN2g="/>
+    <env name="DB_CONNECTION" value="sqlite"/>
+    <env name="DB_DATABASE" value=":memory:"/>
+  </php>
+  <logging>
+    <junit outputFile="build/report.junit.xml"/>
+  </logging>
+  <source>
+    <include>
+      <directory suffix=".php">./src</directory>
+    </include>
+  </source>
+</phpunit>
