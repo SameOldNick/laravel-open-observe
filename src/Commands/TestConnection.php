@@ -36,10 +36,10 @@ class TestConnection extends Command
 
             $response = $client->sendSingleLog($stream, json_encode(['message' => 'Test log entry from Laravel application.']));
 
-            if ($response->successful()) {
+            if ($response->isSuccessful() && $response->getFailedCount() === 0) {
                 $this->info('Successfully connected to OpenObserve and sent a test log entry.');
             } else {
-                $this->error('Failed to send test log entry. Response: '.$response->body());
+                $this->error('Failed to send test log entry. Response: '.$response->originalResponse?->body() ?? json_encode($response->toArray()));
             }
         } catch (Exception $e) {
             $this->error('Error connecting to OpenObserve: '.$e->getMessage());

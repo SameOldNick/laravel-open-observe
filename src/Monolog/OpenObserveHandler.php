@@ -4,14 +4,13 @@ namespace SameOldNick\OpenObserve\Monolog;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
-use Illuminate\Http\Client\Response;
 use Illuminate\Log\Formatters\JsonFormatter;
-use Illuminate\Support\Arr;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Level;
 use Monolog\LogRecord;
 use RuntimeException;
+use SameOldNick\OpenObserve\DTOs\ApiResponse;
 use SameOldNick\OpenObserve\Support\OpenObserveClient;
 
 class OpenObserveHandler extends AbstractProcessingHandler
@@ -74,30 +73,18 @@ class OpenObserveHandler extends AbstractProcessingHandler
     /**
      * Handles the response from the OpenObserve API.
      *
-     * @param  Response  $response  The response from the OpenObserve API
+     * @param  ApiResponse  $response  The response from the OpenObserve API
      *
      * @throws RuntimeException If the response indicates a failure
      */
-    protected function handleResponse(Response $response): void
+    protected function handleResponse(ApiResponse $response): void
     {
-        if ($response->json('code') != 200) {
-            throw new RuntimeException('Failed to send log to OpenObserve: '.$response->body());
-        }
+        if (! $response->isSuccessful() || $response->getFailedCount() > 0) {
+            $body = $response->originalResponse?->body() ?? json_encode($response->toArray());
 
-        $statuses = $response->json('status');
-
-        if (is_array($statuses)) {
-            foreach ($statuses as $status) {
-                if (! Arr::hasAll($status, ['name', 'successful', 'failed'])) {
-                    throw new RuntimeException('Failed to send log to OpenObserve: Invalid response format');
-                }
-
-                if ($status['failed'] > 0) {
-                    throw new RuntimeException('Failed to send log to OpenObserve: '.$response->body());
-                }
-            }
-        } else {
-            throw new RuntimeException('Failed to send log to OpenObserve: Invalid response format');
+            throw new RuntimeException(
+                'Failed to send log to OpenObserve: '.$body,
+            );
         }
     }
 

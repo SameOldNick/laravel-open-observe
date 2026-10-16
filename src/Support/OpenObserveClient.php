@@ -5,6 +5,7 @@ namespace SameOldNick\OpenObserve\Support;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use SameOldNick\OpenObserve\DTOs\ApiResponse;
 
 class OpenObserveClient
 {
@@ -24,21 +25,25 @@ class OpenObserveClient
     /**
      * Send a single log entry to the OpenObserve instance.
      */
-    public function sendSingleLog(string $stream, string $logData): Response
+    public function sendSingleLog(string $stream, string $logData): ApiResponse
     {
-        return $this->createHttpClient()
+        $response = $this->createHttpClient()
             ->withBody($logData, 'application/json')
             ->post($this->buildApiEndpointPath("/{$stream}/_json"));
+
+        return $this->transformResponse($response);
     }
 
     /**
      * Send multiple log entries to the OpenObserve instance.
      */
-    public function sendMultiLogs(string $stream, string $multiLogData): Response
+    public function sendMultiLogs(string $stream, string $multiLogData): ApiResponse
     {
-        return $this->createHttpClient()
+        $response = $this->createHttpClient()
             ->withBody($multiLogData, 'application/json')
             ->post($this->buildApiEndpointPath("/{$stream}/_multi"));
+
+        return $this->transformResponse($response);
     }
 
     /**
@@ -65,5 +70,13 @@ class OpenObserveClient
         }
 
         return $request->baseUrl($this->baseUrl);
+    }
+
+    /**
+     * Transform the HTTP response into an ApiResponse object.
+     */
+    protected function transformResponse(Response $response): ApiResponse
+    {
+        return ApiResponse::fromResponse($response);
     }
 }
