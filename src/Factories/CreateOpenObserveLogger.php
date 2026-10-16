@@ -2,6 +2,7 @@
 
 namespace SameOldNick\OpenObserve\Factories;
 
+use Illuminate\Support\Arr;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Level;
 use Monolog\Logger;
@@ -44,11 +45,11 @@ class CreateOpenObserveLogger
     protected function createClient(array $config): OpenObserveClient
     {
         return new OpenObserveClient(
-            baseUrl: $config['base_url'] ?? '',
-            organization: $config['organization'] ?? '',
-            username: $config['auth']['username'] ?? '',
-            password: $config['auth']['password'] ?? '',
-            options: $config['http_options'] ?? null,
+            baseUrl: Arr::get($config, 'base_url', ''),
+            organization: Arr::get($config, 'organization', ''),
+            username: Arr::get($config, 'auth.username'),
+            password: Arr::get($config, 'auth.password'),
+            options: Arr::get($config, 'http_options'),
         );
     }
 
@@ -59,10 +60,10 @@ class CreateOpenObserveLogger
     {
         $handler = new OpenObserveHandler(
             client: $client,
-            verifyResponse: (bool) $config['verify_response'] ?? true,
-            stream: $config['stream'] ?? '',
-            level: $config['level'] ?? Level::Debug,
-            bubble: $config['bubble'] ?? true,
+            verifyResponse: (bool) Arr::boolean($config, 'http_options.verify_response', true),
+            stream: Arr::get($config, 'stream', ''),
+            level: Arr::get($config, 'level', Level::Debug),
+            bubble: Arr::boolean($config, 'bubble', true),
         );
 
         return $handler;

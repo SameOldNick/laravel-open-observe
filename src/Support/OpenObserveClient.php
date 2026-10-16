@@ -14,8 +14,8 @@ class OpenObserveClient
     public function __construct(
         private readonly string $baseUrl,
         private readonly string $organization,
-        private readonly string $username,
-        private readonly string $password,
+        private readonly ?string $username,
+        private readonly ?string $password,
         private readonly ?array $options = null,
     ) {
         //
@@ -26,7 +26,9 @@ class OpenObserveClient
      */
     public function sendSingleLog(string $stream, string $logData): Response
     {
-        return $this->createHttpClient()->withBody($logData, 'application/json')->post($this->buildApiEndpointPath("/{$stream}/_json"));
+        return $this->createHttpClient()
+            ->withBody($logData, 'application/json')
+            ->post($this->buildApiEndpointPath("/{$stream}/_json"));
     }
 
     /**
