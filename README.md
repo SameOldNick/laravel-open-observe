@@ -5,6 +5,21 @@
 
 A Laravel package for sending application logs to [OpenObserve](https://openobserve.ai/).
 
+## Table of Contents
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+  - [Configuration options](#configuration-options)
+  - [Response verification and failures](#response-verification-and-failures)
+- [Usage](#usage)
+- [Testing the connection](#testing-the-connection)
+  - [Programmatic usage](#programmatic-usage)
+- [Laravel Boost](#laravel-boost)
+- [Development](#development)
+- [Security](#security)
+- [License](#license)
+
 ## Requirements
 
 - PHP 8.4 or later
