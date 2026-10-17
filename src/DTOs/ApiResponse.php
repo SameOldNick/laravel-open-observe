@@ -7,6 +7,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use SameOldNick\OpenObserve\Exceptions\InvalidResponse;
 
 class ApiResponse implements Arrayable
 {
@@ -110,15 +111,19 @@ class ApiResponse implements Arrayable
      *
      * @throws ValidationException If the validation fails.
      */
-    public static function validateResponseData(array $data): void
+    public static function validateResponseData(array $data): array
     {
-        Validator::make($data, [
-            'code' => 'required|integer',
-            'status' => 'required|array',
-            'status.*.name' => 'required|string',
-            'status.*.successful' => 'required|integer|min:0',
-            'status.*.failed' => 'required|integer|min:0',
-        ])->validate();
+        try {
+            return Validator::make($data, [
+                'code' => 'required|integer',
+                'status' => 'sometimes|array',
+                'status.*.name' => 'required|string',
+                'status.*.successful' => 'required|integer|min:0',
+                'status.*.failed' => 'required|integer|min:0',
+            ])->validate();
+        } catch (ValidationException $e) {
+            throw new InvalidResponse('Invalid response body: '.$e->getMessage(), 0, $e);
+        }
     }
 
     /**
@@ -131,17 +136,21 @@ class ApiResponse implements Arrayable
     {
         $data = $response->json();
 
-        self::validateResponseData($data);
+        if (! is_array($data)) {
+            throw new InvalidResponse('Response body is not a valid JSON array.');
+        }
+
+        $validated = self::validateResponseData($data);
 
         return new self(
-            code: $data['code'],
+            code: $validated['code'],
             statuses: array_map(function ($status) {
                 return new ApiResponseStreamStatus(
                     stream: $status['name'],
                     successCount: $status['successful'],
                     failureCount: $status['failed'],
                 );
-            }, $data['status']),
+            }, $validated['status'] ?? []),
             originalResponse: $response,
         );
     }

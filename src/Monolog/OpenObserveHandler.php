@@ -11,6 +11,7 @@ use Monolog\Level;
 use Monolog\LogRecord;
 use RuntimeException;
 use SameOldNick\OpenObserve\DTOs\ApiResponse;
+use SameOldNick\OpenObserve\Exceptions\InvalidResponse;
 use SameOldNick\OpenObserve\Support\OpenObserveClient;
 
 class OpenObserveHandler extends AbstractProcessingHandler
@@ -47,6 +48,8 @@ class OpenObserveHandler extends AbstractProcessingHandler
             $this->handleRequestException($e);
         } catch (ConnectionException $e) {
             $this->handleConnectionException($e);
+        } catch (InvalidResponse $e) {
+            throw new RuntimeException('Failed to send log to OpenObserve: '.$e->getMessage(), 0, $e);
         }
     }
 
