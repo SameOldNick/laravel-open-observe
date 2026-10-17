@@ -7,6 +7,7 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Log\Formatters\JsonFormatter;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Handler\AbstractProcessingHandler;
+use Monolog\Handler\HandlerInterface;
 use Monolog\Level;
 use Monolog\LogRecord;
 use RuntimeException;
@@ -27,8 +28,6 @@ class OpenObserveHandler extends AbstractProcessingHandler
         bool $bubble = true,
     ) {
         parent::__construct($level, $bubble);
-
-        $this->setFormatter($this->createFormatter());
     }
 
     /**
@@ -58,10 +57,8 @@ class OpenObserveHandler extends AbstractProcessingHandler
      */
     protected function write(LogRecord $record): void
     {
-        $logData = $this->getFormatter()->format($record);
-
         try {
-            $response = $this->client->sendSingleLog($this->stream, $logData);
+            $response = $this->client->sendSingleLog($this->stream, $record->formatted);
 
             if ($this->verifyResponse) {
                 $this->handleResponse($response);
@@ -116,11 +113,23 @@ class OpenObserveHandler extends AbstractProcessingHandler
     }
 
     /**
-     * Creates a formatter for the log records.
-     *
-     * @return FormatterInterface The formatter instance
+     * {@inheritDoc}
      */
-    protected function createFormatter(): FormatterInterface
+    public function setFormatter(FormatterInterface $formatter): HandlerInterface
+    {
+        if (! $formatter instanceof JsonFormatter) {
+            throw new RuntimeException('OpenObserveHandler only supports JsonFormatter');
+        }
+
+        return parent::setFormatter($formatter);
+    }
+
+    /**
+     * Gets the default formatter.
+     *
+     * Overwrite this if the LineFormatter is not a good default for your handler.
+     */
+    protected function getDefaultFormatter(): FormatterInterface
     {
         return new JsonFormatter(batchMode: JsonFormatter::BATCH_MODE_NEWLINES, appendNewline: true);
     }
