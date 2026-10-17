@@ -2,6 +2,23 @@
 
 use SameOldNick\OpenObserve\Factories\CreateOpenObserveLogger;
 
+$openObserveChannel = [
+    'base_url' => 'https://openobserve.test',
+    'organization' => 'test-org',
+    'stream' => 'test-stream',
+    'auth' => [
+        'username' => 'user',
+        'password' => 'secret',
+    ],
+    'http_options' => [
+        'timeout' => 5,
+        'connect_timeout' => 5,
+        'verify_response' => true,
+    ],
+    'level' => 'debug',
+    'bubble' => true,
+];
+
 return [
 
     /*
@@ -66,20 +83,13 @@ return [
             'driver' => 'custom',
             'via' => CreateOpenObserveLogger::class,
             'name' => 'openobserve',
-            'base_url' => 'https://openobserve.test',
-            'organization' => 'test-org',
-            'stream' => 'test-stream',
-            'auth' => [
-                'username' => 'user',
-                'password' => 'secret',
-            ],
-            'http_options' => [
-                'timeout' => 5,
-                'connect_timeout' => 5,
-                'verify_response' => true,
-            ],
-            'level' => 'debug',
-            'bubble' => true,
+            ...$openObserveChannel,
+        ],
+
+        'openobserve-driver' => [
+            'driver' => 'openobserve',
+            'name' => 'openobserve-driver',
+            ...$openObserveChannel,
         ],
 
     ],

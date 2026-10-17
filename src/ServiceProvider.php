@@ -2,6 +2,7 @@
 
 namespace SameOldNick\OpenObserve;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 class ServiceProvider extends BaseServiceProvider
@@ -13,7 +14,10 @@ class ServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
-        //
+        // Register the OpenObserve logger extension with Laravel's logging system
+        Log::extend('openobserve', function ($app, array $config) {
+            return $app->make(Factories\CreateOpenObserveLogger::class)->build($config);
+        });
     }
 
     /**
