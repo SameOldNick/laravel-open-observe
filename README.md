@@ -137,6 +137,10 @@ if (! $result->successful) {
 
 The result exposes `successful`, `message`, `stream`, `response`, and `exception`.
 
+## Laravel Boost
+
+This package ships Boost AI guidelines in `resources/boost/guidelines/core.blade.php`. They are installed automatically when an application runs `php artisan boost:install`.
+
 ## Development
 
 ```bash
