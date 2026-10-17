@@ -119,6 +119,24 @@ php artisan openobserve:test-connection --debug
 
 > **Note:** `--debug` prints request headers, including authentication credentials, and response details. Avoid capturing its output in shared or persistent logs.
 
+### Programmatic usage
+
+The connection test is available as a console-independent runner, so it can also be used from jobs or other services:
+
+```php
+use SameOldNick\OpenObserve\Support\OpenObserveConnectionTester;
+
+$result = app(OpenObserveConnectionTester::class)->test(
+    config: config('logging.channels.openobserve'),
+);
+
+if (! $result->successful) {
+    throw new RuntimeException($result->message, previous: $result->exception);
+}
+```
+
+The result exposes `successful`, `message`, `stream`, `response`, and `exception`.
+
 ## Development
 
 ```bash
