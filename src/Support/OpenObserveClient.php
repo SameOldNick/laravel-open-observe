@@ -5,6 +5,7 @@ namespace SameOldNick\OpenObserve\Support;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use InvalidArgumentException;
 use SameOldNick\OpenObserve\DTOs\ApiResponse;
 
 class OpenObserveClient
@@ -27,6 +28,10 @@ class OpenObserveClient
      */
     public function sendSingleLog(string $stream, string $logData): ApiResponse
     {
+        if (! $stream) {
+            throw new InvalidArgumentException('Stream name cannot be empty.');
+        }
+
         $response = $this->createHttpClient()
             ->withBody($logData, 'application/json')
             ->post($this->buildApiEndpointPath("/{$stream}/_json"));
@@ -39,6 +44,10 @@ class OpenObserveClient
      */
     public function sendMultiLogs(string $stream, string $multiLogData): ApiResponse
     {
+        if (! $stream) {
+            throw new InvalidArgumentException('Stream name cannot be empty.');
+        }
+
         $response = $this->createHttpClient()
             ->withBody($multiLogData, 'application/json')
             ->post($this->buildApiEndpointPath("/{$stream}/_multi"));
