@@ -24,8 +24,7 @@ Add a new logging channel to `config/logging.php`:
 
 ```php
 'openobserve' => [
-    'driver' => 'custom',
-    'via' => \SameOldNick\OpenObserve\Factories\CreateOpenObserveLogger::class,
+    'driver' => 'openobserve',
     'name' => env('OPENOBSERVE_LOGGER_NAME', 'openobserve'),
     'base_url' => env('OPENOBSERVE_URL', ''),
     'organization' => env('OPENOBSERVE_ORGANIZATION', 'default'),
@@ -43,6 +42,8 @@ Add a new logging channel to `config/logging.php`:
     'bubble' => true,
 ],
 ```
+
+The package registers the `openobserve` logging driver. If you prefer Laravel's `custom` driver, you can still use `'driver' => 'custom'` with `'via' => \SameOldNick\OpenObserve\Factories\CreateOpenObserveLogger::class`.
 
 ### Configuration options
 
