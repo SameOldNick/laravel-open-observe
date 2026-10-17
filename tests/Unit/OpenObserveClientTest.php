@@ -11,10 +11,13 @@ use RuntimeException;
 use SameOldNick\OpenObserve\DTOs\ApiResponse;
 use SameOldNick\OpenObserve\Exceptions\InvalidResponse;
 use SameOldNick\OpenObserve\Support\ObservesOpenObserveClient;
+use SameOldNick\OpenObserve\Tests\Concerns\ApiResponsePayload;
 use SameOldNick\OpenObserve\Tests\TestCase;
 
 class OpenObserveClientTest extends TestCase
 {
+    use ApiResponsePayload;
+
     public function test_builds_api_endpoint_path_with_a_single_leading_slash(): void
     {
         $client = $this->makeClient();
@@ -407,19 +410,5 @@ class OpenObserveClientTest extends TestCase
             password: $password,
             options: $options,
         );
-    }
-
-    private function apiResponsePayload(int $code = 200, ?array $statuses = null): array
-    {
-        return [
-            'code' => $code,
-            'status' => $statuses ?? [
-                [
-                    'name' => 'application',
-                    'successful' => 1,
-                    'failed' => 0,
-                ],
-            ],
-        ];
     }
 }
