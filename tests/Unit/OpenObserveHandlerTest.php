@@ -7,6 +7,8 @@ use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
+use Monolog\Formatter\FormatterInterface;
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Level;
 use Monolog\LogRecord;
 use RuntimeException;
@@ -232,6 +234,46 @@ class OpenObserveHandlerTest extends TestCase
         $this->expectExceptionMessage('Failed to send log to OpenObserve: Invalid response body');
 
         $this->makeHandler($client)->handleBatch([$this->makeRecord()]);
+    }
+
+    public function test_throws_when_invalid_formatter_is_set(): void
+    {
+        $client = $this->mock(OpenObserveClient::class);
+
+        $this->expectException(RuntimeException::class);
+
+        $this->makeHandler($client)->setFormatter(new class implements FormatterInterface
+        {
+            public function format(LogRecord $record): string
+            {
+                return '';
+            }
+
+            public function formatBatch(array $records): string
+            {
+                return '';
+            }
+        });
+    }
+
+    public function test_can_set_json_formatter(): void
+    {
+        $client = $this->mock(OpenObserveClient::class);
+
+        $handler = $this->makeHandler($client);
+
+        $handler->setFormatter(new JsonFormatter);
+
+        $this->assertInstanceOf(JsonFormatter::class, $handler->getFormatter());
+    }
+
+    public function test_uses_the_default_formatter(): void
+    {
+        $client = $this->mock(OpenObserveClient::class);
+
+        $handler = $this->makeHandler($client);
+
+        $this->assertInstanceOf(FormatterInterface::class, $handler->getFormatter());
     }
 
     private function makeHandler(

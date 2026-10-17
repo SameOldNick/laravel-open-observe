@@ -6,6 +6,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Log\Formatters\JsonFormatter;
 use Monolog\Formatter\FormatterInterface;
+use Monolog\Formatter\JsonFormatter as MonologJsonFormatter;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Level;
@@ -117,7 +118,7 @@ class OpenObserveHandler extends AbstractProcessingHandler
      */
     public function setFormatter(FormatterInterface $formatter): HandlerInterface
     {
-        if (! $formatter instanceof JsonFormatter) {
+        if (! $formatter instanceof MonologJsonFormatter) {
             throw new RuntimeException('OpenObserveHandler only supports JsonFormatter');
         }
 
