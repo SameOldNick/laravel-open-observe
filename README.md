@@ -49,6 +49,9 @@ return [
             'organization' => env('OPENOBSERVE_ORGANIZATION', 'default'),
             'stream' => env('OPENOBSERVE_STREAM', ''),
             'auth' => [
+                // Alternatively, paste the Authorization header value from an ingest token.
+                // When set, 'token' takes precedence over the username and password.
+                // 'token' => env('OPENOBSERVE_TOKEN'),
                 'username' => env('OPENOBSERVE_USERNAME'),
                 'password' => env('OPENOBSERVE_PASSWORD'),
             ],
@@ -76,25 +79,39 @@ The following environment variables can be set in your `.env` file to configure 
 #OPENOBSERVE_STREAM=your-stream
 #OPENOBSERVE_USERNAME=your-username
 #OPENOBSERVE_PASSWORD=your-password
+#OPENOBSERVE_TOKEN="Basic <base64-encoded-username:password>"
 #OPENOBSERVE_HTTP_TIMEOUT=5
 #OPENOBSERVE_HTTP_CONNECT_TIMEOUT=5
 ```
 
 ### Configuration options
 
-| Option                            | Required | Description                                                                           |
-| --------------------------------- | -------- | ------------------------------------------------------------------------------------- |
-| `base_url`                        | Yes      | The base URL of your OpenObserve instance, such as `https://openobserve.example.com`. |
-| `organization`                    | Yes      | The OpenObserve organization used in the API path.                                    |
-| `stream`                          | Yes      | The default stream that log entries are written to.                                   |
-| `auth.username` / `auth.password` | No       | Basic authentication credentials. Authentication is omitted when both are empty.      |
-| `http_options`                    | No       | Options passed to Laravel's HTTP client, such as `timeout` and `connect_timeout`.     |
-| `http_options.verify_response`    | No       | Verifies the OpenObserve response body. Defaults to `true`.                           |
-| `name`                            | No       | The logger name included in each log record. Defaults to `openobserve`.               |
-| `level`                           | No       | The minimum Monolog level to send. Defaults to `debug`.                               |
-| `bubble`                          | No       | Whether records may bubble to subsequent Monolog handlers. Defaults to `true`.        |
+| Option                            | Required | Description                                                                                                                                                       |
+| --------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `base_url`                        | Yes      | The base URL of your OpenObserve instance, such as `https://openobserve.example.com`.                                                                             |
+| `organization`                    | Yes      | The OpenObserve organization used in the API path.                                                                                                                |
+| `stream`                          | Yes      | The default stream that log entries are written to.                                                                                                               |
+| `auth.username` / `auth.password` | No       | Basic authentication credentials. Authentication is omitted when both are empty.                                                                                  |
+| `auth.token`                      | No       | Full `Authorization` header value (including the scheme), such as the one copied from an ingest token. Takes precedence over `auth.username` and `auth.password`. |
+| `http_options`                    | No       | Options passed to Laravel's HTTP client, such as `timeout` and `connect_timeout`.                                                                                 |
+| `http_options.verify_response`    | No       | Verifies the OpenObserve response body. Defaults to `true`.                                                                                                       |
+| `name`                            | No       | The logger name included in each log record. Defaults to `openobserve`.                                                                                           |
+| `level`                           | No       | The minimum Monolog level to send. Defaults to `debug`.                                                                                                           |
+| `bubble`                          | No       | Whether records may bubble to subsequent Monolog handlers. Defaults to `true`.                                                                                    |
 
 Single log entries are sent to `/api/{organization}/{stream}/_json`; batched entries use `/api/{organization}/{stream}/_multi`.
+
+### Using an ingest token
+
+OpenObserve presents ingest tokens as a complete `Authorization` header value, such as `Basic dXNlcjpwYXNzd29yZA==`. Paste that value into `auth.token` (or `OPENOBSERVE_TOKEN`) instead of decoding it into a username and password:
+
+```php
+'auth' => [
+    'token' => env('OPENOBSERVE_TOKEN'),
+],
+```
+
+The value is used verbatim as the `Authorization` header, so include the scheme (`Basic `, `Bearer `, and so on). When `auth.token` is set, `auth.username` and `auth.password` are ignored.
 
 ### Response verification and failures
 

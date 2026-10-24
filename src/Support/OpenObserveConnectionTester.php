@@ -59,6 +59,7 @@ class OpenObserveConnectionTester
     ): ObservesOpenObserveClient {
         $username = Arr::get($config, 'auth.username');
         $password = Arr::get($config, 'auth.password');
+        $token = Arr::get($config, 'auth.token');
         $options = Arr::get($config, 'http_options');
 
         $client = new ObservesOpenObserveClient(
@@ -67,6 +68,7 @@ class OpenObserveConnectionTester
             username: is_string($username) && $username !== '' ? $username : null,
             password: is_string($password) && $password !== '' ? $password : null,
             options: is_array($options) ? $options : null,
+            token: is_string($token) && $token !== '' ? $token : null,
         );
 
         if ($onRequest) {

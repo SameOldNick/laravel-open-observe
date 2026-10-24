@@ -19,6 +19,7 @@ class OpenObserveClient
         private readonly ?string $username,
         private readonly ?string $password,
         private readonly ?array $options = null,
+        private readonly ?string $token = null,
     ) {
         //
     }
@@ -70,7 +71,9 @@ class OpenObserveClient
     {
         $request = Http::throw()->acceptJson();
 
-        if ($this->username || $this->password) {
+        if ($this->token !== null && trim($this->token) !== '') {
+            $request = $request->withHeader('Authorization', $this->token);
+        } elseif ($this->username || $this->password) {
             $request = $request->withBasicAuth($this->username ?? '', $this->password ?? '');
         }
 

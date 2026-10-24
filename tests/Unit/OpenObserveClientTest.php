@@ -152,6 +152,58 @@ class OpenObserveClientTest extends TestCase
         Http::assertSent(fn (Request $request): bool => $request->header('Authorization') === ['Basic '.base64_encode(':secret')]);
     }
 
+    public function test_sends_the_configured_token_as_the_authorization_header(): void
+    {
+        Http::fake([
+            '*' => Http::response($this->apiResponsePayload()),
+        ]);
+
+        $token = 'Basic '.base64_encode('user:secret');
+
+        $this->makeClient(token: $token, username: null, password: null)
+            ->sendSingleLog('application', '{"message":"token"}');
+
+        Http::assertSent(fn (Request $request): bool => $request->header('Authorization') === [$token]);
+    }
+
+    public function test_sends_the_token_without_adding_a_scheme(): void
+    {
+        Http::fake([
+            '*' => Http::response($this->apiResponsePayload()),
+        ]);
+
+        $token = base64_encode('user:secret');
+
+        $this->makeClient(token: $token, username: null, password: null)
+            ->sendSingleLog('application', '{"message":"token without scheme"}');
+
+        Http::assertSent(fn (Request $request): bool => $request->header('Authorization') === [$token]);
+    }
+
+    public function test_prefers_the_token_over_the_configured_username_and_password(): void
+    {
+        Http::fake([
+            '*' => Http::response($this->apiResponsePayload()),
+        ]);
+
+        $this->makeClient(token: 'Bearer ingest-token')
+            ->sendSingleLog('application', '{"message":"token precedence"}');
+
+        Http::assertSent(fn (Request $request): bool => $request->header('Authorization') === ['Bearer ingest-token']);
+    }
+
+    public function test_falls_back_to_basic_auth_when_the_token_is_blank(): void
+    {
+        Http::fake([
+            '*' => Http::response($this->apiResponsePayload()),
+        ]);
+
+        $this->makeClient(token: '   ')
+            ->sendSingleLog('application', '{"message":"blank token"}');
+
+        Http::assertSent(fn (Request $request): bool => $request->header('Authorization') === ['Basic '.base64_encode('user:secret')]);
+    }
+
     public function test_applies_configured_http_options_to_the_request(): void
     {
         Http::fake([
@@ -402,6 +454,7 @@ class OpenObserveClientTest extends TestCase
         ?string $username = 'user',
         ?string $password = 'secret',
         ?array $options = null,
+        ?string $token = null,
     ): ObservesOpenObserveClient {
         return new ObservesOpenObserveClient(
             baseUrl: $baseUrl,
@@ -409,6 +462,7 @@ class OpenObserveClientTest extends TestCase
             username: $username,
             password: $password,
             options: $options,
+            token: $token,
         );
     }
 }

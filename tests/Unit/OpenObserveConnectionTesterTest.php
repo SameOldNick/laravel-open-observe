@@ -34,6 +34,22 @@ class OpenObserveConnectionTesterTest extends TestCase
             && json_decode($request->body(), true)['message'] === 'Test log entry from Laravel application.');
     }
 
+    public function test_uses_the_configured_token_for_authentication(): void
+    {
+        Http::fake([
+            '*' => Http::response($this->apiResponsePayload()),
+        ]);
+
+        $config = $this->channelConfig();
+        $config['auth'] = ['token' => 'Basic '.base64_encode('user:secret')];
+
+        $result = (new OpenObserveConnectionTester)->test($config);
+
+        $this->assertTrue($result->successful);
+
+        Http::assertSent(fn (Request $request): bool => $request->header('Authorization') === ['Basic '.base64_encode('user:secret')]);
+    }
+
     public function test_uses_the_provided_stream_and_invokes_request_and_response_callbacks(): void
     {
         Http::fake([

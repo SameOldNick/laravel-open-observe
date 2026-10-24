@@ -42,6 +42,21 @@ class LoggingTest extends TestCase
     }
 
     #[DataProvider('driverChannels')]
+    public function test_logging_to_open_observe_uses_the_configured_token(string $channel): void
+    {
+        $token = 'Basic '.base64_encode('user:secret');
+        config()->set("logging.channels.{$channel}.auth", ['token' => $token]);
+
+        Http::fake([
+            '*' => Http::response($this->apiResponsePayload()),
+        ]);
+
+        Log::channel($channel)->info('Test log message');
+
+        Http::assertSent(fn (Request $request): bool => $request->header('Authorization') === [$token]);
+    }
+
+    #[DataProvider('driverChannels')]
     public function test_logging_to_open_observe_with_supported_driver_configurations(string $channel): void
     {
         Http::fake([

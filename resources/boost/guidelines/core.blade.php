@@ -15,6 +15,8 @@ Prefer the registered driver in `config/logging.php`:
     'organization' => env('OPENOBSERVE_ORGANIZATION', 'default'),
     'stream' => env('OPENOBSERVE_STREAM'),
     'auth' => [
+        // Paste the full Authorization header value from an ingest token instead of
+        // splitting it into credentials: 'token' => env('OPENOBSERVE_TOKEN'),
         'username' => env('OPENOBSERVE_USERNAME'),
         'password' => env('OPENOBSERVE_PASSWORD'),
     ],
@@ -30,6 +32,8 @@ Prefer the registered driver in `config/logging.php`:
 @endverbatim
 
 `base_url`, `organization`, and `stream` are required. The stream must be non-empty. Authentication is omitted when both credentials are empty.
+
+Prefer `auth.token` when the user has an OpenObserve ingest token: it is sent verbatim as the `Authorization` header, so the value must include the scheme, and it takes precedence over `auth.username` and `auth.password`.
 
 `verify_response` must be placed inside `http_options`. `name` sets the channel field on each record, `level` sets the minimum Monolog level, and `bubble` controls whether records continue to subsequent Monolog handlers.
 
