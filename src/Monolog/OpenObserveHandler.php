@@ -132,6 +132,10 @@ class OpenObserveHandler extends AbstractProcessingHandler
      */
     protected function getDefaultFormatter(): FormatterInterface
     {
-        return new JsonFormatter(batchMode: JsonFormatter::BATCH_MODE_NEWLINES, appendNewline: true);
+        // Laravel 13 and above uses it's own JsonFormatter to support Laravel exception formatting.
+        // Revert to Monolog's JsonFormatter for Laravel 12 and below.
+        return class_exists(JsonFormatter::class) ?
+            new JsonFormatter(batchMode: JsonFormatter::BATCH_MODE_NEWLINES, appendNewline: true) :
+            new MonologJsonFormatter(batchMode: MonologJsonFormatter::BATCH_MODE_NEWLINES, appendNewline: true);
     }
 }
