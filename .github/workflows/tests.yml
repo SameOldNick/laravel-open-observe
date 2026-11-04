@@ -18,8 +18,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - laravel: "11.*"
-            testbench: "9.*"
           - laravel: "12.*"
             testbench: "10.*"
           - laravel: "13.*"

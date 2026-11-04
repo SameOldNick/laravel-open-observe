@@ -23,7 +23,7 @@ A Laravel package for sending application logs to [OpenObserve](https://openobse
 ## Requirements
 
 - PHP 8.4 or later
-- Laravel 11, 12, or 13
+- Laravel 12, or 13
 
 ## Installation
 
