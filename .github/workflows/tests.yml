@@ -11,7 +11,19 @@ permissions:
 
 jobs:
   tests:
+    name: tests (Laravel ${{ matrix.laravel }})
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - laravel: "11.*"
+            testbench: "9.*"
+          - laravel: "12.*"
+            testbench: "10.*"
+          - laravel: "13.*"
+            testbench: "11.*"
 
     steps:
       - name: Setup PHP
@@ -35,8 +47,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-composer-
 
-      - name: Install Dependencies
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      - name: Install dependencies
+        run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          # Laravel 11 is past security support, so Composer blocks all of its stable releases; allow them for compatibility testing.
+          composer update --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --no-blocking
 
       - name: Build Workbench
         run: composer build
