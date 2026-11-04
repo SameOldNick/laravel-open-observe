@@ -2,20 +2,30 @@
 
 namespace SameOldNick\OpenObserve\Commands;
 
-use Illuminate\Console\Attributes\Description;
-use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use SameOldNick\OpenObserve\Support\OpenObserveConnectionTester;
 
-#[Signature('openobserve:test-connection
-            {--config-key= : The configuration key to use for the OpenObserve client (default: logging.channels.openobserve)}
-            {--stream= : The OpenObserve stream to send the test log entry to (default: from config) }
-            {--debug : Enable debug output for the HTTP request and response}')]
-#[Description('Test the connection to the OpenObserve instance')]
 class TestConnection extends Command
 {
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'openobserve:test-connection
+            {--config-key= : The configuration key to use for the OpenObserve client (default: logging.channels.openobserve)}
+            {--stream= : The OpenObserve stream to send the test log entry to (default: from config) }
+            {--debug : Enable debug output for the HTTP request and response}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Test the connection to the OpenObserve instance';
+
     /**
      * Execute the console command.
      */
