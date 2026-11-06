@@ -12,6 +12,7 @@ A Laravel package for sending application logs to [OpenObserve](https://openobse
 - [Configuration](#configuration)
   - [Configuration options](#configuration-options)
   - [Response verification and failures](#response-verification-and-failures)
+  - [Exception reporting](#exception-reporting)
 - [Usage](#usage)
 - [Testing the connection](#testing-the-connection)
   - [Programmatic usage](#programmatic-usage)
@@ -32,6 +33,14 @@ You can install the package via Composer:
 ```bash
 composer require sameoldnick/laravel-open-observe
 ```
+
+The package loads its configuration automatically. To publish a copy of the configuration file to your application, run:
+
+```bash
+php artisan vendor:publish --tag=openobserve-config
+```
+
+This publishes `config/openobserve.php`, which you can customize for exception reporting and other package settings.
 
 ## Configuration
 
@@ -116,6 +125,26 @@ The value is used verbatim as the `Authorization` header, so include the scheme 
 ### Response verification and failures
 
 With `verify_response` enabled, a response containing a non-2xx `code` or any `failed` entries throws a `RuntimeException`. HTTP and connection failures also throw, regardless of `verify_response`. Disable response verification only if you want to ignore OpenObserve body-level failures while still surfacing transport errors.
+
+### Exception reporting
+
+To report Laravel exceptions to OpenObserve, register `ReportsException` in `bootstrap/app.php`:
+
+```php
+use Illuminate\Foundation\Configuration\Exceptions;
+use SameOldNick\OpenObserve\Handlers\ReportsException;
+
+return Application::configure(basePath: dirname(__DIR__))
+    // ...
+    ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->report(
+            ReportsException::create(config('openobserve.exceptions')),
+        );
+    })
+    ->create();
+```
+
+The reporter uses the `exceptions` settings in `config/openobserve.php` and sends entries to the configured stream, which defaults to `exceptions`. You can disable exception reporting with `OPENOBSERVE_EXCEPTIONS_ENABLED=false` or filter exceptions with the `should_report` option.
 
 ## Usage
 
