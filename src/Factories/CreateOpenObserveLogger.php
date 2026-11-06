@@ -11,8 +11,12 @@ use SameOldNick\OpenObserve\Support\OpenObserveClient;
 
 class CreateOpenObserveLogger
 {
-    public function __construct()
-    {
+    /**
+     * Create a new class instance.
+     */
+    public function __construct(
+        protected readonly CreateOpenObserveClient $clientFactory,
+    ) {
         //
     }
 
@@ -44,16 +48,7 @@ class CreateOpenObserveLogger
      */
     protected function createClient(array $config): OpenObserveClient
     {
-        $token = Arr::get($config, 'auth.token');
-
-        return new OpenObserveClient(
-            baseUrl: Arr::get($config, 'base_url', ''),
-            organization: Arr::get($config, 'organization', ''),
-            username: Arr::get($config, 'auth.username'),
-            password: Arr::get($config, 'auth.password'),
-            options: Arr::get($config, 'http_options'),
-            token: is_string($token) && $token !== '' ? $token : null,
-        );
+        return $this->clientFactory->build($config);
     }
 
     /**
