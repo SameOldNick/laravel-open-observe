@@ -6,10 +6,12 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use RuntimeException;
 use SameOldNick\OpenObserve\Handlers\ReportsException;
 use SameOldNick\OpenObserve\Tests\Concerns\ApiResponsePayload;
+use SameOldNick\OpenObserve\Tests\Fixtures\TransformsException;
 use SameOldNick\OpenObserve\Tests\TestCase;
 use Throwable;
 
@@ -119,6 +121,104 @@ class ExceptionReportingTest extends TestCase
         Http::assertSentCount(1);
     }
 
+    public function test_reports_exceptions_using_the_transform_exception_callback(): void
+    {
+        Http::fake([
+            '*' => Http::response($this->apiResponsePayload()),
+        ]);
+
+        $transformedException = null;
+
+        $this->registerExceptionReporter([
+            'transform_exception' => function (Throwable $exception) use (&$transformedException): string {
+                $transformedException = $exception;
+
+                return json_encode([
+                    'message' => 'Custom: '.$exception->getMessage(),
+                    'custom_field' => 'custom-value',
+                ]);
+            },
+        ]);
+
+        $exception = new InvalidArgumentException('Something went wrong', 42);
+
+        report($exception);
+
+        $this->assertSame($exception, $transformedException);
+
+        Http::assertSent(function (Request $request): bool {
+            return $request->method() === 'POST'
+                && $request->url() === 'https://openobserve.test/api/test-org/exceptions/_json'
+                && json_decode($request->body(), true) === [
+                    'message' => 'Custom: Something went wrong',
+                    'custom_field' => 'custom-value',
+                ];
+        });
+
+        Http::assertSentCount(1);
+    }
+
+    public function test_reports_exceptions_using_an_invokable_transform_exception_callback(): void
+    {
+        Http::fake([
+            '*' => Http::response($this->apiResponsePayload()),
+        ]);
+
+        $this->registerExceptionReporter([
+            'transform_exception' => TransformsException::class,
+        ]);
+
+        report(new RuntimeException('Something went wrong'));
+
+        Http::assertSent(function (Request $request): bool {
+            return json_decode($request->body(), true) === [
+                'transformed_by' => 'invokable',
+                'message' => 'Something went wrong',
+            ];
+        });
+
+        Http::assertSentCount(1);
+    }
+
+    public function test_does_not_call_the_transform_exception_callback_when_the_exception_is_not_reportable(): void
+    {
+        Http::fake();
+
+        $transformCalled = false;
+
+        $this->registerExceptionReporter([
+            'should_report' => fn (Throwable $exception): bool => false,
+            'transform_exception' => function (Throwable $exception) use (&$transformCalled): string {
+                $transformCalled = true;
+
+                return 'transformed';
+            },
+        ]);
+
+        report(new RuntimeException('Something went wrong'));
+
+        $this->assertFalse($transformCalled);
+
+        Http::assertNothingSent();
+    }
+
+    public function test_logs_an_error_when_the_transform_exception_callback_throws(): void
+    {
+        Http::fake();
+        Log::spy();
+
+        $this->registerExceptionReporter([
+            'transform_exception' => fn (Throwable $exception): string => throw new RuntimeException('Transformation failed'),
+        ]);
+
+        report(new InvalidArgumentException('Something went wrong'));
+
+        Http::assertNothingSent();
+
+        Log::shouldHaveReceived('error')
+            ->with('Failed to send exception to OpenObserve: Transformation failed');
+    }
+
     /**
      * Register the OpenObserve exception reporter using Laravel's exception configuration.
      */
@@ -141,6 +241,7 @@ class ExceptionReportingTest extends TestCase
                 'verify_response' => true,
             ],
             'should_report' => null,
+            'transform_exception' => null,
         ], $overrides);
 
         $exceptions->report(ReportsException::create($config));

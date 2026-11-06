@@ -50,5 +50,18 @@ return [
         | 'should_report' => \App\Services\OpenObserve\ShouldReportExceptionClosure::class,
         */
         'should_report' => null,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Transform Exception Closure
+        |--------------------------------------------------------------------------
+        |
+        | A closure that receives the exception and returns a string representation of the exception to be sent to OpenObserve.
+        | If not set, the default transformation will be used.
+        |
+        | Example:
+        | 'transform_exception' => \App\Services\OpenObserve\TransformExceptionClosure::class,
+        */
+        'transform_exception' => null,
     ],
 ];

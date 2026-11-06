@@ -16,6 +16,7 @@ class ReportsException
         public readonly ?OpenObserveClient $client,
         public readonly string $stream,
         public readonly ?Closure $shouldReportClosure = null,
+        public readonly ?Closure $transformExceptionClosure = null,
     ) {
         //
     }
@@ -71,6 +72,10 @@ class ReportsException
      */
     protected function transformExceptionForSend(Throwable $exception): string
     {
+        if ($this->transformExceptionClosure) {
+            return ($this->transformExceptionClosure)($exception);
+        }
+
         $record = [
             'message' => $exception->getMessage(),
             'stack_trace' => $exception->getTraceAsString(),
@@ -123,6 +128,15 @@ class ReportsException
             return app()->call($config['should_report'], ['exception' => $exception]);
         } : null;
 
-        return new self($client, $config['stream'], $shouldReportCallback ? Closure::fromCallable($shouldReportCallback) : null);
+        $transformExceptionCallback = $config['transform_exception'] ? function (Throwable $exception) use ($config) {
+            return app()->call($config['transform_exception'], ['exception' => $exception]);
+        } : null;
+
+        return new self(
+            $client,
+            $config['stream'],
+            $shouldReportCallback ? Closure::fromCallable($shouldReportCallback) : null,
+            $transformExceptionCallback ? Closure::fromCallable($transformExceptionCallback) : null,
+        );
     }
 }
