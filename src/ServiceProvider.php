@@ -18,6 +18,8 @@ class ServiceProvider extends BaseServiceProvider
         Log::extend('openobserve', function ($app, array $config) {
             return $app->make(Factories\CreateOpenObserveLogger::class)->build($config);
         });
+
+        $this->mergeConfigFrom(__DIR__.'/../config/openobserve.php', 'openobserve');
     }
 
     /**
@@ -32,5 +34,9 @@ class ServiceProvider extends BaseServiceProvider
                 Commands\TestConnection::class,
             ]);
         }
+
+        $this->publishes([
+            __DIR__.'/../config/openobserve.php' => config_path('openobserve.php'),
+        ], 'openobserve-config');
     }
 }
