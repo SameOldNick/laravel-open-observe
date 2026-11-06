@@ -5,6 +5,16 @@ All notable changes are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-11-06
+
+### Added
+
+- `transform_exception` configuration option for exception reporting. It accepts a container-resolved callable that receives the exception and returns the string record sent to OpenObserve, replacing the default record containing the message, stack trace, code, file, line, and timestamp.
+
+### Changed
+
+- `ReportsException` accepts an optional transform closure as its fourth constructor argument.
+
 ## [2.0.0] - 2026-11-05
 
 ### Added
@@ -44,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reusable `OpenObserveConnectionTester` for jobs and other application code.
 - Laravel Boost AI guidelines.
 
+[2.1.0]: https://github.com/SameOldNick/laravel-open-observe/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/SameOldNick/laravel-open-observe/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/SameOldNick/laravel-open-observe/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/SameOldNick/laravel-open-observe/releases/tag/v1.0.0
